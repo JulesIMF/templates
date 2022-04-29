@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/julesimf/source/MIPT/Ded4/templates/containers/debug/dbg.cpp
+string
+-
+iostream
+-
+sstream
+-
+functional
+-
+

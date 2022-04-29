@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/julesimf/source/MIPT/Ded4/templates/containers",
+  "command": "/usr/bin/c++   -I/home/julesimf/source/MIPT/Ded4/templates/containers/debug/includes  -O2 -Wno-multichar -Wno-unused-result -Wno-narrowing -fsanitize=address  -g   -std=gnu++17 -o CMakeFiles/play.dir/play.cpp.o -c /home/julesimf/source/MIPT/Ded4/templates/containers/play.cpp",
+  "file": "/home/julesimf/source/MIPT/Ded4/templates/containers/play.cpp"
+},
+{
+  "directory": "/home/julesimf/source/MIPT/Ded4/templates/containers",
+  "command": "/usr/bin/c++   -I/home/julesimf/source/MIPT/Ded4/templates/containers/debug/includes  -O2 -Wno-multichar -Wno-unused-result -Wno-narrowing -fsanitize=address  -g   -std=gnu++17 -o CMakeFiles/array_dbg.dir/array_dbg.cpp.o -c /home/julesimf/source/MIPT/Ded4/templates/containers/array_dbg.cpp",
+  "file": "/home/julesimf/source/MIPT/Ded4/templates/containers/array_dbg.cpp"
+},
+{
+  "directory": "/home/julesimf/source/MIPT/Ded4/templates/containers/debug",
+  "command": "/usr/bin/c++   -I/home/julesimf/source/MIPT/Ded4/templates/containers/debug/includes  -O2 -Wno-multichar -Wno-unused-result -Wno-narrowing -fsanitize=address -g   -std=gnu++17 -o CMakeFiles/dbg.dir/dbg.cpp.o -c /home/julesimf/source/MIPT/Ded4/templates/containers/debug/dbg.cpp",
+  "file": "/home/julesimf/source/MIPT/Ded4/templates/containers/debug/dbg.cpp"
+}
+]

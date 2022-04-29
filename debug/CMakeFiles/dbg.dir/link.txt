@@ -1,0 +1,2 @@
+/usr/bin/ar qc bin/libdbg.a  CMakeFiles/dbg.dir/dbg.cpp.o
+/usr/bin/ranlib bin/libdbg.a
