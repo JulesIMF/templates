@@ -1,0 +1,104 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						2,
+						3
+					]
+				},
+				{
+					"build" : "debug",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "debug",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "containers",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "array_dbg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-array_dbg-Debug-4466da74178df07e5884.json",
+					"name" : "array_dbg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "dbg::@789cf532419e99b67093",
+					"jsonFile" : "target-dbg-Debug-d399b55aa9355a4a57a3.json",
+					"name" : "dbg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "play::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-play-Debug-9020b1fb4772fd9d35ea.json",
+					"name" : "play",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "vector_dbg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-vector_dbg-Debug-0dd46e7d530989c51423.json",
+					"name" : "vector_dbg",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/julesimf/source/MIPT/Ded4/templates/containers/build",
+		"source" : "/home/julesimf/source/MIPT/Ded4/templates/containers"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}

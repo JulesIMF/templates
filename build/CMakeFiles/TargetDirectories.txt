@@ -1,0 +1,8 @@
+/home/julesimf/source/MIPT/Ded4/templates/containers/build/CMakeFiles/rebuild_cache.dir
+/home/julesimf/source/MIPT/Ded4/templates/containers/build/CMakeFiles/edit_cache.dir
+/home/julesimf/source/MIPT/Ded4/templates/containers/build/CMakeFiles/play.dir
+/home/julesimf/source/MIPT/Ded4/templates/containers/build/CMakeFiles/vector_dbg.dir
+/home/julesimf/source/MIPT/Ded4/templates/containers/build/CMakeFiles/array_dbg.dir
+/home/julesimf/source/MIPT/Ded4/templates/containers/build/debug/CMakeFiles/rebuild_cache.dir
+/home/julesimf/source/MIPT/Ded4/templates/containers/build/debug/CMakeFiles/edit_cache.dir
+/home/julesimf/source/MIPT/Ded4/templates/containers/build/debug/CMakeFiles/dbg.dir
