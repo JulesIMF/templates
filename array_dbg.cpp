@@ -288,9 +288,23 @@ void bool_specialization()
     jules::tests::complete();
 }
 
+void strange_tests()
+{
+    jules::tests::start("strange_tests");
+
+    jules::tests::test("on_heap InitialSize == 0",
+        [&]
+        {
+            jules::array<int, 0, jules::storage::on_heap> arr;
+        });
+
+    jules::tests::complete();
+}
+
 int main()
 {
     on_stack();
     on_heap();
     bool_specialization();
+    strange_tests();
 }

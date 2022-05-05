@@ -23,11 +23,14 @@ Revision History:
 // Includes / usings
 //
 
+#pragma once
 #include <cassert>
 #include <cstddef>
 #include <array>
 #include <stdexcept>
 #include <type_traits>
+
+#include "allocators.hpp"
 
 //
 // Defines
@@ -35,12 +38,19 @@ Revision History:
 
 namespace jules::storage
 {
-    template<typename T, size_t InitialCapacity>
+    template<typename T, std::size_t InitialCapacity, class Allocator = jules::allocator::Default<T, true>>
     class on_heap
     {
+    public:
+        static bool const is_raw   = Allocator::is_raw;
+        using value_type           = T;
+        using size_type            = std::size_t;
+        using difference_type      = std::ptrdiff_t;
+
     protected:
-        T* const data_;
-        size_t capacity_;
+        Allocator allocator_;
+        value_type* data_;
+        size_type capacity_;
 
     public:
         // 
@@ -48,68 +58,68 @@ namespace jules::storage
         // 
 
         on_heap() :
-            data_(reinterpret_cast<T*>(new uint8_t[InitialCapacity * sizeof(T)])),
+            data_(allocator_.allocate(InitialCapacity)),
             capacity_(InitialCapacity)
         {
         }
 
         ~on_heap()
         {
-            delete[] reinterpret_cast<uint8_t*>(data_);
+            allocator_.deallocate(data_, capacity_);
         }
 
         //
         // Element access
         //
 
-        void inline create(size_t index)
+        void inline create(difference_type index)
         {
-            new (data_ + index) T();
+            new (data_ + index) value_type();
         }
 
         template<typename... Args>
-        void inline create(size_t index, Args&&... args)
+        void inline create(difference_type index, Args&&... args)
         {
-            new (data_ + index) T(std::forward<Args>(args)...);
+            new (data_ + index) value_type(std::forward<Args>(args)...);
         }
 
-        void inline destroy(size_t index)
+        void inline destroy(difference_type index)
         {
-            (data_ + index)->~T();
+            (data_ + index)->~value_type();
         }
 
-        [[nodiscard]] inline T const& at_unchecked(size_t index) const noexcept
+        [[nodiscard]] inline value_type const& at_unchecked(difference_type index) const noexcept
         {
             return data_[index];
         }
 
-        [[nodiscard]] inline T& at_unchecked(size_t index) noexcept
+        [[nodiscard]] inline value_type& at_unchecked(difference_type index) noexcept
         {
-            return const_cast<T&>(static_cast<on_heap const*>(this)->at_unchecked(index));
+            return const_cast<value_type&>(static_cast<on_heap const*>(this)->at_unchecked(index));
         }
 
-        [[nodiscard]] inline T const* data() const noexcept
+        [[nodiscard]] inline value_type const* data() const noexcept
         {
             return data_;
         }
 
-        [[nodiscard]] inline T* data() noexcept
+        [[nodiscard]] inline value_type* data() noexcept
         {
-            return const_cast<T*>(static_cast<on_heap const*>(this)->data());
+            return const_cast<value_type*>(static_cast<on_heap const*>(this)->data());
         }
 
         //
         // Capacity
         //
 
-        [[nodiscard]] inline size_t capacity() const noexcept
+        [[nodiscard]] inline size_type capacity() const noexcept
         {
             return capacity_;
         }
 
-        void inline realloc(size_t new_capacity, size_t elements_to_move = 0, size_t move_from = 0)
+        void inline realloc(size_type new_capacity, size_type elements_to_move = 0, difference_type move_from = 0)
         {
-            static_assert(std::is_move_constructible<T>::value);
+            static_assert(std::is_move_constructible<value_type>::value);
             if (new_capacity == capacity_)
                 return;
 
@@ -118,18 +128,21 @@ namespace jules::storage
                     "new capacity == %zu is less than move_from + elements_to_move == %zu",
                     new_capacity, move_from + elements_to_move);
 
-            T* new_data = reinterpret_cast<T*>(new uint8_t[new_capacity * sizeof(T)]);
+            // value_type* new_data = reinterpret_cast<value_type*>(new uint8_t[new_capacity * sizeof(value_type)]);
+            value_type* new_data = allocator_.allocate(new_capacity);
 
             for (int i = move_from; i != move_from + elements_to_move; i++)
             {
                 // only way to do this???
                 // can`t just copy, cause fields may depend on this
 
-                new (new_data + i) T(std::move(data_[i]));
+                if (is_raw)
+                    new (new_data + i) value_type(std::move(data_[i]));
+                    
                 destroy(i);
             }
 
-            delete[] reinterpret_cast<uint8_t*>(data_);
+            allocator_.deallocate(data_, capacity_);
             data_ = new_data;
             capacity_ = new_capacity;
         }

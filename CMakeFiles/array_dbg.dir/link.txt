@@ -1,1 +1,1 @@
-/usr/bin/c++  -O2 -Wno-multichar -Wno-unused-result -Wno-narrowing -fsanitize=address  -g   CMakeFiles/array_dbg.dir/array_dbg.cpp.o  -o array_dbg  debug/bin/libdbg.a 
+/usr/bin/c++  -O0 -Wno-multichar -Wno-unused-result -Wno-narrowing   -g   CMakeFiles/array_dbg.dir/array_dbg.cpp.o  -o array_dbg  debug/bin/libdbg.a 

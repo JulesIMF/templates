@@ -6,13 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/home/julesimf/source/MIPT/Ded4/templates/containers/array.hpp
+/home/julesimf/source/MIPT/Ded4/templates/containers/allocators.hpp
 cstddef
 -
-on_stack.hpp
-/home/julesimf/source/MIPT/Ded4/templates/containers/on_stack.hpp
-on_heap.hpp
-/home/julesimf/source/MIPT/Ded4/templates/containers/on_heap.hpp
 
 /home/julesimf/source/MIPT/Ded4/templates/containers/on_heap.hpp
 cassert
@@ -25,6 +21,8 @@ stdexcept
 -
 type_traits
 -
+allocators.hpp
+/home/julesimf/source/MIPT/Ded4/templates/containers/allocators.hpp
 
 /home/julesimf/source/MIPT/Ded4/templates/containers/on_stack.hpp
 cstddef
@@ -33,10 +31,12 @@ array
 -
 stdexcept
 -
+on_heap.hpp
+/home/julesimf/source/MIPT/Ded4/templates/containers/on_heap.hpp
 
 /home/julesimf/source/MIPT/Ded4/templates/containers/play.cpp
-array.hpp
-/home/julesimf/source/MIPT/Ded4/templates/containers/array.hpp
+vector.hpp
+/home/julesimf/source/MIPT/Ded4/templates/containers/vector.hpp
 iostream
 -
 string
@@ -47,4 +47,18 @@ cassert
 -
 vector
 -
+
+/home/julesimf/source/MIPT/Ded4/templates/containers/vector.hpp
+cstddef
+-
+iterator
+-
+limits
+-
+allocators.hpp
+/home/julesimf/source/MIPT/Ded4/templates/containers/allocators.hpp
+on_stack.hpp
+/home/julesimf/source/MIPT/Ded4/templates/containers/on_stack.hpp
+on_heap.hpp
+/home/julesimf/source/MIPT/Ded4/templates/containers/on_heap.hpp
 

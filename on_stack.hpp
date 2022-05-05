@@ -8,7 +8,7 @@ Module Name:
 
 Abstract:
 
-    
+    Stack storage 
 
 Author / Creation date:
 
@@ -23,9 +23,11 @@ Revision History:
 // Includes / usings
 //
 
+#pragma once
 #include <cstddef>
 #include <array>
 #include <stdexcept>
+#include "on_heap.hpp"
 
 //
 // Defines
@@ -33,7 +35,7 @@ Revision History:
 
 namespace jules::storage
 {
-    template<typename T, size_t MaxSize>
+    template<typename T, size_t MaxSize, class Allocator = jules::allocator::Empty<T>>
     class on_stack
     {
     protected:

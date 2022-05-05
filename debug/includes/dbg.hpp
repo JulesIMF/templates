@@ -4,7 +4,7 @@ Copyright (c) 2022 JulesIMF, MIPT
 
 Module Name:
 
-    array_test.hpp
+    dbg.hpp
 
 Abstract:
 
@@ -23,6 +23,7 @@ Revision History:
 // Includes / usings
 //
 
+#pragma once
 #include <functional>
 #include <string>
 

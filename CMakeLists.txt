@@ -10,8 +10,6 @@
 #
 #		My default CMake. Allows to compile the project
 #		changing only FILES (and other flags if needed).
-#		
-#		Build this project with "make" or "make jimp".#		
 #
 #---
 
@@ -32,7 +30,7 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # add_definitions(NDEBUG)
 
-set(OPT "-O2")
+set(OPT "-O0")
 set(SANITIZE 1)
 
 if(SANITIZE)
@@ -57,6 +55,12 @@ add_executable(array_dbg
 )
 
 target_link_libraries(array_dbg dbg)
+
+add_executable(vector_dbg
+        vector_dbg.cpp
+)
+
+target_link_libraries(vector_dbg dbg)
 
 add_executable(play
         play.cpp

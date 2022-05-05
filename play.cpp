@@ -23,7 +23,7 @@ Revision History:
 // Includes / usings
 //
 
-#include "array.hpp"
+#include "vector.hpp"
 #include <iostream>
 #include <string>
 #include <array>
@@ -43,35 +43,44 @@ struct Lol
     void check() { assert(this == lol); };
 };
 
+int* arr()
+{
+    return new int[5];
+}
+
 int main()
 {
-    try
+    jules::vector<std::string> v = {std::string("11"), "211", "311"};
+    auto dump = [&]
     {
-        jules::array<bool, 5, jules::storage::on_heap> arr = {false, false, true, false};
-        arr.resize(5);
-        arr.resize(0);
-        arr.resize(5);
+        std::cout << "Contains: ";
+        for (auto const& s: v)
+            std::cout << s << " ";
 
-        for (int i = 0; i != 5; i++)
-            arr[i] = i & 1;
+        std::cout << "\n";
+        
+        printf("Size:     %zu\n"
+               "Capacity: %zu\n"
+               "Data:     %p\n",
+               v.size(),
+               v.capacity(),
+               v.data());
+    };
 
-        for (int i = 0; i != 5; i++)
-            std::cout << arr[i] << " ";
+    // dump();
+    
+    v.clear();
 
-        printf("\n");
+    v = {"aaa"};
 
-        arr = { true, true, false, true };
+    //dump();
 
-        for (int i = 0; i != arr.size(); i++)
-            std::cout << arr[i] << " ";
-
-        printf("\n");
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-        while (true)
-        {       
-        }        
-    }
+    std::string s = "bbb";
+    v.insert(v.end(), s);
+    v.insert(v.begin(), "ccc");
+    // for (auto it = v.begin(); it != v.end(); ++it)
+    //     std::cout << *it;
+                
+    for (auto const& s : v)
+        std::cout << s;
 }

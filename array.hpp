@@ -36,12 +36,12 @@ namespace jules
 {
     // example: array<int, 5, storage::on_stack>
     // template<typename T, size_t MaxSize/*, template<typename, size_t> class Storage*/>
-    template<typename T, size_t MaxSize, template<typename, size_t> class Storage>
+    template<typename T, size_t MaxSize, template<typename, size_t, class> class Storage>
     class array
     {
     protected:
-        //#define Storage  storage::on_stack
-        Storage<T, MaxSize> storage_;
+        // #define Storage  storage::on_stack
+        Storage<T, MaxSize, jules::allocator::Default<T, true>> storage_;
         size_t size_ = 0;
 
         inline void check_size_(size_t size, char const* fnc) const
@@ -365,7 +365,7 @@ namespace jules
         }
     };
 
-    template<size_t MaxSize, template<typename, size_t> class Storage>
+    template<size_t MaxSize, template<typename, size_t, class> class Storage>
     class array<bool, MaxSize, Storage>
     {
     protected:
@@ -438,7 +438,7 @@ namespace jules
     
     protected:
         static size_t constexpr Capacity = (MaxSize + 7) / 8;
-        Storage<uint8_t, Capacity> storage_;
+        Storage<uint8_t, Capacity, jules::allocator::Default<uint8_t, true>> storage_;
         size_t size_ = 0;
 
         inline void check_size_(size_t size, char const* fnc) const
