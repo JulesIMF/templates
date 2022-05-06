@@ -8,13 +8,14 @@ Module Name:
 
 Abstract:
 
-    
+    Vector implementation that follows stl vector interface.
 
 Author / Creation date:
 
     JulesIMF / 05.04.22
 
 Revision History:
+	05.05.22  23:22		Vector complete
 
 --*/
 
@@ -55,8 +56,8 @@ namespace jules
         static size_type const initial_capacity
                                    = 0;
         using storage_type         = Storage<value_type, initial_capacity, allocator_type>;
-        using reference            = reference;
-        using const_reference      = const_reference;
+        using reference            = T&;
+        using const_reference      = T const&;
         using pointer              = T*;
         using const_pointer        = T const*;
 
@@ -1081,6 +1082,7 @@ namespace jules
                     storage_.destroy(--i);
 
                 size_ = new_size;
+                shrink_to_fit();
             }
         }
 
@@ -1241,15 +1243,16 @@ namespace jules
     class vector<bool, Allocator, Storage>
     {
     protected:
-        struct __bool_ref
-        {
-        friend class array<bool, MaxSize, Storage>;
+    struct __bool_ref
+    {
+        friend class vector<bool, Allocator, Storage>;
         __bool_ref(__bool_ref const&) = default; // not explicit
+        __bool_ref(__bool_ref&&) = default; // not explicit
 
         __bool_ref& operator=(bool value) noexcept
         {
-            octet_ &= ~(1 << bit_);
-            octet_ |= (1 << bit_) * value;
+            (*octet_) &= ~(1 << bit_);
+            (*octet_) |= (1 << bit_) * value;
             return *this;
         }
 
@@ -1258,16 +1261,22 @@ namespace jules
             *this = bool(other);
             return *this;
         }
+        
+        __bool_ref& operator=(__bool_ref&& other)
+        {
+            *this = bool(other);
+            return *this;
+        }
 
         operator bool() const noexcept
         {
-            return (octet_ >> bit_) & 0x1;
-        }
+            return ((*octet_) >> bit_) & 0x1;
+        }     
 
-        
-        private:
+
+    private:
         __bool_ref(uint8_t& octet, size_t bit) noexcept :
-            octet_(octet), bit_(bit)
+            octet_(&octet), bit_(bit)
         {
         }
 
@@ -1276,14 +1285,14 @@ namespace jules
             return __bool_ref(data[index >> 3], index & 7ull);
         }
 
-        private:
-            uint8_t& octet_;
+    private:
+            uint8_t* octet_;
             size_t const bit_;
-        };
+    };
 
-        struct __bool_const_ref
-        {
-        friend class array<bool, MaxSize, Storage>;
+    struct __bool_const_ref
+    {
+        friend class vector<bool, Allocator, Storage>;
         __bool_const_ref(__bool_const_ref const&) = default; // not explicit
 
         operator bool() const noexcept
@@ -1306,13 +1315,13 @@ namespace jules
         private:
             uint8_t const& octet_;
             size_t const bit_;
-        };
+    };
 
         static_assert(Allocator::is_raw, "Allocator for vector must be raw!");
     public:
         using value_type           = bool;
         using real_type            = uint8_t;
-        using allocator_type       = Allocator;
+        using allocator_type       = jules::allocator::Default<real_type, true>;
         using size_type            = std::size_t;
         using difference_type      = std::ptrdiff_t;
         static size_type const initial_capacity
@@ -1328,6 +1337,7 @@ namespace jules
         public:
             using value_type           = value_type;
             using difference_type      = difference_type;
+            using pointer              = pointer;
             using reference            = reference;
             using iterator_category    = std::random_access_iterator_tag;
 
@@ -1407,6 +1417,11 @@ namespace jules
                 return (*vector_)[index_];
             }
 
+            pointer operator->()
+            {
+                return &(*vector_)[index_];
+            }
+
             reference operator[](difference_type index)
             {
                 return (*vector_)[index_ + index];
@@ -1451,6 +1466,7 @@ namespace jules
         public:
             using value_type           = value_type;
             using difference_type      = difference_type;
+            using pointer              = const_pointer;
             using reference            = const_reference;
             using iterator_category    = std::random_access_iterator_tag;
 
@@ -1536,6 +1552,11 @@ namespace jules
                 return (*vector_)[index_];
             }
 
+            pointer operator->()
+            {
+                return &(*vector_)[index_];
+            }
+
             reference operator[](difference_type index)
             {
                 return (*vector_)[index_ + index];
@@ -1580,6 +1601,7 @@ namespace jules
         public:
             using value_type           = value_type;
             using difference_type      = difference_type;
+            using pointer              = pointer;
             using reference            = reference;
             using iterator_category    = std::random_access_iterator_tag;
 
@@ -1664,6 +1686,11 @@ namespace jules
                 return (*vector_)[translate_(index_)];
             }
 
+            pointer operator->()
+            {
+                return &(*vector_)[translate_(index_)];
+            }
+
             reference operator[](difference_type index)
             {
                 return (*vector_)[translate_(index_ + index)];
@@ -1708,6 +1735,7 @@ namespace jules
         public:
             using value_type           = value_type;
             using difference_type      = difference_type;
+            using pointer              = const_pointer;
             using reference            = const_reference;
             using iterator_category    = std::random_access_iterator_tag;
 
@@ -1797,6 +1825,11 @@ namespace jules
                 return (*vector_)[translate_(index_)];
             }
 
+            pointer operator->()
+            {
+                return &(*vector_)[translate_(index_)];
+            }
+
             reference operator[](difference_type index)
             {
                 return (*vector_)[translate_(index_ + index)];
@@ -1846,7 +1879,7 @@ namespace jules
         storage_type storage_;
         size_type size_ = 0;
 
-        inline size_type octet_number_(size_type bits)
+        inline size_type octets_number_(size_type bits)
         {
             return (bits + 8 * sizeof(real_type) - 1) / (8 * sizeof(real_type));
         }
@@ -1878,7 +1911,7 @@ namespace jules
 
         inline bool is_created_(difference_type i)
         {
-            return octet_by_bit_(i) < octets_number_(size_)
+            return octet_by_bit_(i) < octets_number_(size_);
         }
 
         inline void realloc_if_needed_(difference_type size_diff = 1)
@@ -1890,19 +1923,21 @@ namespace jules
                 assert(-size_diff < size_);
             }
 
-            assert(size_ <= current_capacity);
+            assert(size_ <= current_capacity * 8 * sizeof(real_type));
 
-            if (octets_numbers_(new_size * 4) <= current_capacity && current_capacity > 0)
+            if (octets_number_(new_size * 4) <= current_capacity && current_capacity > 0)
             {
-                storage_.realloc((current_capacity + 1) / 2, size_);
+                auto size = (size_diff < 0) ? size_ + size_diff : size_;
+                storage_.realloc((current_capacity + 1) / 2, octets_number_(size));
                 return;
             }
 
             auto new_capacity = current_capacity;
-            while (octets_numbers_(new_size) >= new_capacity)
+            while (octets_number_(new_size) >= new_capacity)
                 new_capacity = std::max(new_capacity * 2, static_cast<size_type>(1));
             
-            storage_.realloc(new_capacity, octets_numbers_(size_));
+            auto size = (size_diff < 0) ? size_ - size_diff : size_;
+            storage_.realloc(new_capacity, octets_number_(size));
         }
 
         inline void move_tail_(difference_type start, difference_type shift)
@@ -1953,7 +1988,7 @@ namespace jules
         vector(std::initializer_list<value_type> list) :
             size_(list.size())
         {
-            reserve(size);
+            reserve(size_);
 
             difference_type i = 0;
             for (auto it = list.begin(); it != list.end(); ++it, i++)
@@ -1965,7 +2000,7 @@ namespace jules
         {
             reserve(size_);
 
-            for (difference_type i = 0; i != octet_number_(size_); i++)
+            for (difference_type i = 0; i != octets_number_(size_); i++)
                 storage_.create(i, origin.storage_.at_unchecked(i));
         }
 
@@ -1974,7 +2009,7 @@ namespace jules
         {
             reserve(size_);
 
-            for (difference_type i = 0; i != octet_number_(size_); i++)
+            for (difference_type i = 0; i != octets_number_(size_); i++)
                 storage_.create(i, origin.storage_.at_unchecked(i));
         }
 
@@ -1990,7 +2025,7 @@ namespace jules
             reserve(origin.size_);
             size_ = origin.size_;
 
-            for (difference_type i = 0; i != octet_number_(size_); i++)
+            for (difference_type i = 0; i != octets_number_(size_); i++)
                 storage_.create(i, origin.storage_.at_unchecked(i));         
 
             return *this;
@@ -2001,7 +2036,7 @@ namespace jules
             reserve(origin.size_);
             size_ = origin.size_;
 
-            for (difference_type i = 0; i != octet_number_(size_); i++)
+            for (difference_type i = 0; i != octets_number_(size_); i++)
                 storage_.create(i, origin.storage_.at_unchecked(i));         
 
             return *this;
@@ -2009,7 +2044,7 @@ namespace jules
 
         vector& operator=(std::initializer_list<value_type> list)
         {
-            reserve(origin.size_);
+            reserve(list.size());
             size_ = list.size();
 
             difference_type i = 0;
@@ -2037,18 +2072,19 @@ namespace jules
 
         [[nodiscard]] inline reference at_unchecked(difference_type index) noexcept
         {
-            return const_cast<reference>(static_cast<vector const*>(this)->at_unchecked(index));
+            return __bool_ref::create_(storage_.data(), index);
         }
 
         [[nodiscard]] inline const_reference operator[](difference_type index) const
         {
-            check_index_(index, "vector::operator[](difference_type)");
-            return storage_.at_unchecked(index);
+            check_index_(index, "array::operator[](size_t)");
+            return at_unchecked(index);
         }
 
         [[nodiscard]] inline reference operator[](difference_type index)
         {
-            return const_cast<reference>(static_cast<vector const*>(this)->operator[](index));
+            check_index_(index, "array::operator[](size_t)");
+            return at_unchecked(index);
         }
 
         [[nodiscard]] inline const_reference front() const
@@ -2058,7 +2094,7 @@ namespace jules
 
         [[nodiscard]] inline reference front()
         {
-            return const_cast<reference>(static_cast<vector const*>(this)->front());
+            return operator[](0);
         }
 
         [[nodiscard]] inline const_reference back() const
@@ -2068,7 +2104,7 @@ namespace jules
 
         [[nodiscard]] inline reference back()
         {
-            return const_cast<reference>(static_cast<vector const*>(this)->back());
+            return operator[](size_ - 1);
         }
 
         [[nodiscard]] inline const_pointer data() const noexcept
@@ -2168,13 +2204,13 @@ namespace jules
 
         inline void reserve(size_type new_capacity)
         {
-            if (new_capacity > storage_.capacity())
-                storage_.realloc(new_capacity, size_);
+            if (new_capacity > storage_.capacity() * sizeof(real_type))
+                storage_.realloc(octets_number_(new_capacity), octets_number_(size_));
         }
 
         [[nodiscard]] inline size_type capacity() const noexcept
         {
-            return storage_.capacity();
+            return storage_.capacity() * sizeof(real_type) * 8;
         }
 
         inline void shrink_to_fit()
@@ -2188,18 +2224,7 @@ namespace jules
 
         inline void clear() noexcept
         {
-            difference_type i = size_;
-            while (i != 0)
-            {
-                try
-                {
-                    for (; i > 0;)
-                        storage_.destroy(--i);
-                }
-                catch (...) {}
-            }
-
-            size_ = 0;
+            
         }
 
         inline void resize(size_type new_size)
@@ -2212,29 +2237,16 @@ namespace jules
             if (new_size > size_)
             {
                 size_type i = size_;
-                try
-                {
-                    for (; i != new_size; i++)
-                        storage_.create(i);
-                    
-                    size_ = i;
-                }
-                catch (...)
-                {
-                    for (; i > size_;)
-                        storage_.destroy(--i);
-
-                    size_ = i;
-                    throw; // up
-                }
+                for (size_type i = size_; i != new_size; i++)
+                    at_unchecked(i) = false;
+                
+                size_ = new_size;
             }
 
             else
             {
-                for (size_type i = size_; i != new_size;)
-                    storage_.destroy(--i);
-
                 size_ = new_size;
+                shrink_to_fit();
             }
         }
 
@@ -2243,16 +2255,17 @@ namespace jules
         inline reference emplace_back(Args&&... args)
         {
             realloc_if_needed_();
-            storage_.create(static_cast<difference_type>(size_++), std::forward<Args>(args)...);
+            size_++;
+            back() = bool(std::forward<Args>(args)...);
             return back();
         }
 
-        inline void push_back(T const& value)
+        inline void push_back(value_type const& value)
         {
             emplace_back(value);
         }
 
-        inline void push_back(T&& value)
+        inline void push_back(value_type&& value)
         {
             emplace_back(std::move(value));
         }
@@ -2265,53 +2278,43 @@ namespace jules
             size_--;
         }
 
-        inline iterator insert(const_iterator position, T const& value)
+        inline iterator insert(const_iterator position, value_type const& value)
         {
-            check_iterator_(position, "vector::insert(const_iterator, T const&)");
+            check_iterator_(position, "vector::insert(const_iterator, value_type const&)");
             realloc_if_needed_();
             auto index = position - begin();
             move_tail_(index, 1);
-            if (!is_created_(index))
-                storage_.create(index, value);
-            else
-                at_unchecked(index) = value;
+            at_unchecked(index) = value;
             size_++;
             return begin() + index;
         }
 
-        inline iterator insert(const_iterator position, T&& value)
+        inline iterator insert(const_iterator position, value_type&& value)
         {
-            check_iterator_(position, "vector::insert(const_iterator, T&&)");
+            check_iterator_(position, "vector::insert(const_iterator, value_type&&)");
             realloc_if_needed_();
             auto index = position - begin();
             move_tail_(index, 1);
 
-            if (!is_created_(index))
-                storage_.create(index, std::move(value));
-            else
-                at_unchecked(index) = std::move(value);
+            at_unchecked(index) = std::move(value);
 
             size_++;
             return begin() + index;
         }
 
-        inline iterator insert(const_iterator position, size_type count, T const& value)
+        inline iterator insert(const_iterator position, size_type count, value_type const& value)
         {
             if (count == 0)
                 return iterator(*this, position.index_);
 
-            check_iterator_(position, "vector::insert(const_iterator, size_type, T const&)");
+            check_iterator_(position, "vector::insert(const_iterator, size_type, value_type const&)");
             realloc_if_needed_(count);
 
             auto index = position - begin();
             move_tail_(index, static_cast<difference_type>(count));
             for (auto i = index; i != index + count; i++)
             {
-                if (!is_created_(i))
-                    storage_.create(i, value);
-
-                else
-                    at_unchecked(i) = value;
+                at_unchecked(i) = value;
             }
 
             size_ += count;
@@ -2333,20 +2336,16 @@ namespace jules
                  i != index + count && first < last; 
                  i++, ++first)
             {
-                if (!is_created_(i))
-                    storage_.create(i, *first);
-
-                else
-                    at_unchecked(i) = *first;
+                at_unchecked(i) = *first;
             }
 
             size_ += count;
             return begin() + index;
         }
 
-        inline iterator insert(const_iterator position, std::initializer_list<T> list)
+        inline iterator insert(const_iterator position, std::initializer_list<value_type> list)
         {
-            check_iterator_(position, "vector::insert(const_iterator, std::initializer_list<T>)");
+            check_iterator_(position, "vector::insert(const_iterator, std::initializer_list<value_type>)");
             auto count = list.size();
             realloc_if_needed_(static_cast<difference_type>(count));
 
@@ -2355,11 +2354,7 @@ namespace jules
             auto it = list.begin();
             for (auto i = index; i != index + count; i++, ++it)
             {
-                if (!is_created_(i))
-                    storage_.create(i, std::move(*it));
-
-                else
-                    at_unchecked(i) = *it;
+                at_unchecked(i) = *it;
             }
 
             size_ += count;
@@ -2378,10 +2373,9 @@ namespace jules
             auto index = first.index_;
 
             move_tail_(last.index_, -count);
-            for (auto i = size_ - count; i != size_; i++)
-                storage_.destroy(i);
-            
+            realloc_if_needed_(-static_cast<difference_type>(count));
             size_ -= count;
+
             return begin() + index;
         }
 
@@ -2390,289 +2384,4 @@ namespace jules
             return erase(position, position + 1);
         }
     };
-
-
-
-    // template<size_t MaxSize, template<typename, size_t, class> class Storage>
-    // class vector<bool, MaxSize, Storage>
-    // {
-    // protected:
-    //     struct __bool_ref
-    //     {
-    //     friend class vector<bool, MaxSize, Storage>;
-    //     __bool_ref(__bool_ref const&) = default; // not explicit
-
-    //     __bool_ref& operator=(bool value) noexcept
-    //     {
-    //         octet_ &= ~(1 << bit_);
-    //         octet_ |= (1 << bit_) * value;
-    //         return *this;
-    //     }
-
-    //     __bool_ref& operator=(__bool_ref const& other) noexcept
-    //     {
-    //         *this = bool(other);
-    //         return *this;
-    //     }
-
-    //     operator bool() const noexcept
-    //     {
-    //         return (octet_ >> bit_) & 0x1;
-    //     }
-
-        
-    //     private:
-    //     __bool_ref(uint8_t& octet, size_t bit) noexcept :
-    //         octet_(octet), bit_(bit)
-    //     {
-    //     }
-
-    //     static __bool_ref create_(uint8_t* data, size_t index)
-    //     {
-    //         return __bool_ref(data[index >> 3], index & 7ull);
-    //     }
-
-    //     private:
-    //         uint8_t& octet_;
-    //         size_t const bit_;
-    //     };
-
-    //     struct __bool_const_ref
-    //     {
-    //     friend class vector<bool, MaxSize, Storage>;
-    //     __bool_const_ref(__bool_const_ref const&) = default; // not explicit
-
-    //     operator bool() const noexcept
-    //     {
-    //         return (octet_ >> bit_) & 0x1;
-    //     }
-
-        
-    //     private:
-    //     __bool_const_ref(uint8_t const& octet, size_t bit) noexcept :
-    //         octet_(octet), bit_(bit)
-    //     {
-    //     }
-
-    //     static __bool_const_ref create_(uint8_t const* data, size_t index)
-    //     {
-    //         return __bool_const_ref(data[index >> 3], index & 7ull);
-    //     }
-
-    //     private:
-    //         uint8_t const& octet_;
-    //         size_t const bit_;
-    //     };
-    
-    // protected:
-    //     static size_t constexpr Capacity = (MaxSize + 7) / 8;
-    //     Storage<uint8_t, Capacity, jules::allocator::Default<uint8_t, true>> storage_;
-    //     size_t size_ = 0;
-
-    //     inline void check_size_(size_t size, char const* fnc) const
-    //     {
-    //         if (size > MaxSize)
-    //             std::__throw_out_of_range_fmt("%s: "
-    //                 "size_t == %zu exceeds max_size == %zu",
-    //                 fnc, size_, MaxSize);
-    //     }
-
-    //     inline void check_index_(size_t index, char const* fnc) const
-    //     {
-    //         if (index >= size_)
-    //             std::__throw_out_of_range_fmt("%s: "
-    //                 "index == %zu out of range within size == %zu",
-    //                 fnc, index, size_);
-    //     }
-
-    // public:
-    //     explicit vector(size_t size = 0) noexcept :
-    //         size_(size)
-    //     {
-    //         check_size_(size_, "vector::vector(size_t)");
-    //         for (size_t i = 0; i < size_; i++)
-    //             storage_.create(i / 8, 0);
-    //     }
-
-    //     template<typename U>
-    //     explicit vector(size_t size, U&& value) :
-    //         size_(size)
-    //     {
-    //         check_size_(size_, "vector::vector(size_t, U)");
-    //         bool fill = !!(value);
-    //         for (size_t i = 0; i != size_; i++)
-    //             at_unchecked(i) = fill;
-    //     }
-
-    //     // not explicit!
-    //     vector(std::initializer_list<bool> list) :
-    //         size_(list.size())
-    //     {
-    //         check_size_(size_, "vector::vector(std::initializer_list<T>)");
-
-    //         size_t i = 0;
-    //         for (auto it = list.begin(); it != list.end(); ++it, i++)
-    //             at_unchecked(i) = !!(*it);
-    //     }
-
-    //     vector(vector const& origin) noexcept :
-    //         size_(origin.size_)
-    //     {
-    //         size_t i = 0;
-    //         for (; i != (size_ + 7) / 8; i++)
-    //             storage_.create(i, origin.storage_.at_unchecked(i));
-    //     }
-
-    //     vector(vector&& origin) noexcept :
-    //         size_(origin.size_)
-    //     {
-    //         size_t i = 0;
-    //         for (; i != (size_ + 7) / 8; i++)
-    //             storage_.create(i, origin.storage_.at_unchecked(i));
-    //     }
-
-    //     // void clear() noexcept;
-
-    //     ~vector() noexcept
-    //     {
-            
-    //     }
-
-    //     vector& operator=(vector const& origin)
-    //     {
-    //         size_t i = 0;
-    //         for (; i != (size_ + 7) / 8; i++)
-    //             storage_.create(i, origin.storage_.at_unchecked(i));
-
-    //         return *this;
-    //     }
-
-    //     vector& operator=(vector&& origin)
-    //     {
-    //         size_t i = 0;
-    //         for (; i != (size_ + 7) / 8; i++)
-    //             storage_.create(i, origin.storage_.at_unchecked(i));
-
-    //         return *this;
-    //     }
-
-    //     vector& operator=(std::initializer_list<bool> const& list)
-    //     {
-    //         size_ = list.size();
-    //         check_size_(size_, "vector::operator=(std::initializer_list<T>)");
-
-    //         size_t i = 0;
-    //         for (auto it = list.begin(); it != list.end(); it++, i++)
-    //             at_unchecked(i) = *it;
-
-    //         return *this;
-    //     }
-
-    //     //
-    //     // Element access
-    //     //
-
-    //     [[nodiscard]] inline __bool_const_ref at_unchecked(size_t index) const noexcept
-    //     {
-    //         return __bool_const_ref::create_(storage_.data(), index);
-    //     }
-
-    //     [[nodiscard]] inline __bool_ref at_unchecked(size_t index) noexcept
-    //     {
-    //         return __bool_ref::create_(storage_.data(), index);
-    //     }
-
-    //     [[nodiscard]] inline __bool_const_ref operator[](size_t index) const
-    //     {
-    //         check_index_(index, "vector::operator[](size_t)");
-    //         return at_unchecked(index);
-    //     }
-
-    //     [[nodiscard]] inline __bool_ref operator[](size_t index)
-    //     {
-    //         check_index_(index, "vector::operator[](size_t)");
-    //         return at_unchecked(index);
-    //     }
-
-    //     [[nodiscard]] inline __bool_const_ref front() const
-    //     {
-    //         return operator[](0);
-    //     }
-
-    //     [[nodiscard]] inline __bool_ref front()
-    //     {
-    //         return operator[](0);
-    //     }
-
-    //     [[nodiscard]] inline __bool_const_ref back() const
-    //     {
-    //         return operator[](size_ - 1);
-    //     }
-
-    //     [[nodiscard]] inline __bool_ref back()
-    //     {
-    //         return operator[](size_ - 1);
-    //     }
-
-    //     [[nodiscard]] inline uint8_t const* data(size_t index) const noexcept
-    //     {
-    //         return storage_.data();
-    //     }
-
-    //     [[nodiscard]] inline uint8_t* data(size_t index) noexcept
-    //     {
-    //         return const_cast<vector*>(static_cast<vector const*>(this)->data());
-    //     }
-
-    //     //
-    //     // Iterators
-    //     //
-
-
-    //     //
-    //     // Capacity
-    //     //
-
-    //     [[nodiscard]] inline bool empty() const noexcept
-    //     {
-    //         return size_ == 0;
-    //     }
-
-    //     [[nodiscard]] inline size_t size() const noexcept
-    //     {
-    //         return size_;
-    //     }
-
-    //     [[nodiscard]] inline size_t max_size() const noexcept
-    //     {
-    //         return MaxSize;
-    //     }
-
-    //     //
-    //     // Modifiers
-    //     //
-    //     void resize(size_t new_size) noexcept
-    //     {
-    //         if (new_size == size_)
-    //             return;
-
-    //         check_size_(new_size, "vector::resize()");
-
-    //         if (new_size > size_)
-    //         {
-    //             for (size_t i = size_; i != new_size; i++)
-    //                 at_unchecked(i) = false;
-
-    //             size_ = new_size;
-    //         }
-
-    //         else
-    //             size_ = new_size;
-    //     }
-
-    //     void clear() noexcept
-    //     {
-    //         size_ = 0;
-    //     }
-    // };
 }

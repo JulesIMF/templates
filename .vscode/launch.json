@@ -16,7 +16,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/build/play",
+            "program": "${workspaceFolder}/build/vector_dbg",
             "args": [],
             "cwd": "${workspaceFolder}"
         }

@@ -8,7 +8,7 @@ Module Name:
 
 Abstract:
 
-    
+
 
 Author / Creation date:
 
@@ -55,15 +55,15 @@ void default_config_int()
                 std::cout << v[i] << " ";
         },
             "0 1 2 3 4 ");
-    
+
     jules::tests::test("reserve more",
         [&]
         {
             v.reserve(8);
             std::cout << (v.capacity() >= 8);
-        }, 
+        },
             "1");
-        
+
     jules::tests::test("bounds unchecked",
         [&]
         {
@@ -157,13 +157,13 @@ void default_config_str()
                 std::cout << v[i] << " ";
         },
             "0 1 2 3 4 ");
-    
+
     jules::tests::test("reserve more",
         [&]
         {
             v.reserve(8);
             std::cout << (v.capacity() >= 8);
-        }, 
+        },
             "1");
 
     jules::tests::test("resize zeroes",
@@ -207,7 +207,7 @@ void default_config_str()
             auto mv = std::move(v);
             for (int i = 0; i != 5; i++)
                 std::cout << mv[i] << " ";
-            
+
             v = std::move(mv);
             for (int i = 0; i != 5; i++)
                 std::cout << v[i] << " ";
@@ -247,7 +247,7 @@ void iterator_tests()
                 std::cout << v[i] << " ";
         },
             "0 4 1 3 2 ");
-    
+
     jules::tests::test("range based for",
         [&]
         {
@@ -255,7 +255,7 @@ void iterator_tests()
                 std::cout << x << " ";
         },
             "0 4 1 3 2 ");
-    
+
     jules::tests::test("range based for ref",
         [&]
         {
@@ -281,14 +281,14 @@ void iterator_tests()
             }
         },
             "2 3 1 4 0 ");
-    
+
     jules::tests::test("std sort",
         [&]
         {
             std::sort(v.begin(), v.end());
             for (auto const& x : v)
                 std::cout << x << " ";
-        }, 
+        },
             "0 1 2 3 4 ");
 
     jules::tests::test("std sort reverse",
@@ -297,7 +297,7 @@ void iterator_tests()
             std::sort(v.rbegin(), v.rend());
             for (auto const& x : v)
                 std::cout << x << " ";
-        }, 
+        },
             "4 3 2 1 0 ");
 
     jules::tests::test("std copy",
@@ -308,7 +308,7 @@ void iterator_tests()
             for (auto const& x : cp)
                 std::cout << x << " ";
 
-        }, 
+        },
             "4 3 2 1 0 ");
 
     jules::tests::test("emplace back",
@@ -317,7 +317,7 @@ void iterator_tests()
             jules::vector<std::string> v;
             v.emplace_back(3, 'a');
             std::cout << v.back();
-        }, 
+        },
             "aaa");
 
     jules::tests::complete();
@@ -334,26 +334,26 @@ void emplace_insert_remove()
             auto s = v.emplace_back(3, 'a');
             std::cout << v.back();
             std::cout << s;
-        }, 
+        },
             "aaa""aaa");
-    
+
     jules::tests::test("push back",
         [&]
         {
             v.push_back("bbb");
             for (auto const& s : v)
                 std::cout << s << " ";
-        }, 
+        },
             "aaa bbb ");
-    
+
     jules::tests::test("pop back",
         [&]
         {
             v.pop_back();
             std::cout << v.back();
-        }, 
+        },
             "aaa");
-        
+
     jules::tests::test("insert",
         [&]
         {
@@ -362,45 +362,266 @@ void emplace_insert_remove()
             v.insert(v.begin(), "ccc");
 
             v.insert(v.begin() + 1, 2, "ddd");
-                
+
             for (auto const& s : v)
                 std::cout << s;
-            
-        }, 
+
+        },
             "ccc"
             "ddd"
             "ddd"
             "aaa"
             "bbb");
-    
+
     jules::tests::test("insert range",
         [&]
         {
-            v = {"a", "r", "e", "ya"};
-            std::vector<std::string> range = {"r", "an", "ge"};
+            v = { "a", "r", "e", "ya" };
+            std::vector<std::string> range = { "r", "an", "ge" };
             v.insert(v.begin() + 1, range.begin(), range.end());
             for (auto& s : v)
                 std::cout << s;
-        }, 
+        },
             "arangereya");
-    
-    jules::tests::test("insert range",
+
+    jules::tests::test("insert list",
         [&]
         {
-            v.insert(v.end(), {" АХАХАХ ", "ЕГОР ГДЕ БАБЛО??"});
+            v.insert(v.end(), { " АХАХАХ ", "ЕГОР ГДЕ БАБЛО??"});
             for (auto& s : v)
                 std::cout << s;
-        }, 
+        },
             "arangereya АХАХАХ ЕГОР ГДЕ БАБЛО??");
 
-    jules::tests::test("insert range",
+    jules::tests::test("erase range",
         [&]
         {
             v.erase(v.begin() + 1, v.end() - 2);
             for (auto& s : v)
                 std::cout << s;
-        }, 
+        },
             "a АХАХАХ ЕГОР ГДЕ БАБЛО??");
+
+    jules::tests::complete();
+}
+
+void default_config_bool()
+{
+    jules::tests::start("default_config_bool");
+    jules::vector<bool> v;
+
+    jules::tests::test_exception("bounds checked",
+        [&]
+        {
+            v[0] = 0;
+        });
+
+    jules::tests::test("resize and simple routines work",
+        [&]
+        {
+            v.resize(5);
+            for (int i = 0; i != 5; i++)
+                v[i] = (i % 2) == 1;
+
+            for (int i = 0; i != 5; i++)
+                std::cout << v[i] << " ";
+        },
+            "0 1 0 1 0 ");
+
+    jules::tests::test("reserve more",
+        [&]
+        {
+            v.reserve(9);
+            std::cout << (v.capacity() >= 9);
+        },
+            "1");
+
+    jules::tests::test("bounds unchecked",
+        [&]
+        {
+            v.at_unchecked(5) = false;
+        });
+
+    jules::tests::test("resize zeroes",
+        [&]
+        {
+            v.resize(0);
+            v.resize(4);
+            auto sz = v.size();
+            std::cout << sz << " ";
+            for (int i = 0; i != sz; i++)
+                std::cout << v[i] << " ";
+        },
+            "4 0 0 0 0 ");
+
+    jules::tests::test("back and front",
+        [&]
+        {
+            v.back() = false;
+            v.front() = true;
+            std::cout << v[0] << " " << v[v.size() - 1];
+        },
+            "1 0");
+
+    jules::tests::test("move ctr",
+        [&]
+        {
+            v.resize(5);
+            for (int i = 0; i != 5; i++)
+                v[i] = (i % 2) == 1;
+
+            auto mv = std::move(v);
+            for (int i = 0; i != 5; i++)
+                std::cout << mv[i] << " ";
+        },
+            "0 1 0 1 0 ");
+
+    jules::tests::test("copy ctr",
+        [&]
+        {
+            auto cp = v;
+            for (int i = 0; i != 5; i++)
+                std::cout << cp[i] << " ";
+        },
+            "0 1 0 1 0 ");
+
+    jules::tests::test("list assign",
+        [&]
+        {
+            v = { false, false, true, false };
+            for (int i = 0; i != v.size(); i++)
+                std::cout << v[i] << " ";
+        },
+            "0 0 1 0 ");
+
+    jules::tests::complete();
+}
+
+void iterator_tests_bool()
+{
+    jules::tests::start("iterator_tests");
+
+    jules::vector<bool> v = { false, false, true, false };
+    jules::tests::test("list init",
+        [&]
+        {
+            for (int i = 0; i != v.size(); i++)
+                std::cout << v[i] << " ";
+        },
+            "0 0 1 0 ");
+
+    jules::tests::test("range based for",
+        [&]
+        {
+            for (auto x : v)
+            {
+                std::cout << x << " ";
+                x = !x;
+            }
+        },
+            "0 0 1 0 ");
+
+    jules::tests::test("range based for const ref",
+        [&]
+        {
+            for (auto const& x : v)
+                std::cout << x << " ";
+        },
+            "1 1 0 1 ");
+
+    jules::tests::test("reverse iterators",
+        [&]
+        {
+            for (auto rit = v.rbegin(); rit != v.rend(); ++rit)
+            {
+                std::cout << *rit << " ";
+            }
+        },
+            "1 0 1 1 ");
+
+    jules::tests::complete();
+}
+
+void emplace_insert_remove_bool()
+{
+    jules::tests::start("emplace_insert_remove_bool");
+
+    jules::vector<bool> v;
+    jules::tests::test("emplace back",
+        [&]
+        {
+            auto s = v.emplace_back(2);
+            std::cout << v.back();
+            std::cout << s;
+        },
+            "1""1");
+
+    jules::tests::test("push back",
+        [&]
+        {
+            v.push_back(false);
+            for (auto const& s : v)
+                std::cout << s << " ";
+        },
+            "1 0 ");
+
+    jules::tests::test("pop back",
+        [&]
+        {
+            v.pop_back();
+            std::cout << v.back();
+        },
+            "1");
+
+    jules::tests::test("insert",
+        [&]
+        {
+            auto b = false;
+            v.insert(v.end(), b);
+            v.insert(v.begin(), true);
+
+            v.insert(v.begin() + 1, 2, false);
+
+            for (auto const& s : v)
+                std::cout << s;
+
+        },
+            "1"
+            "0"
+            "0"
+            "1"
+            "0");
+
+    jules::tests::test("insert range",
+        [&]
+        {
+            v = { false, false, true, true };
+            std::vector<bool> range = { true, true };
+            v.insert(v.begin() + 1, range.begin(), range.end());
+            for (auto s : v)
+                std::cout << s;
+        },
+            "011011");
+
+    jules::tests::test("insert list",
+        [&]
+        {
+            v.insert(v.end(), { false, false });
+            for (auto s : v)
+                std::cout << s;
+        },
+            "01101100");
+
+
+
+    jules::tests::test("erase range",
+        [&]
+        {
+            v.erase(v.begin() + 2, v.end() - 2);
+            for (auto s : v)
+                std::cout << s;
+        },
+            "0100");
 
     jules::tests::complete();
 }
@@ -412,11 +633,13 @@ void strange_tests()
     jules::tests::complete();
 }
 
-int main()
+int main() 
 {
     default_config_int();
     default_config_str();
     iterator_tests();
     emplace_insert_remove();
-    // strange_tests();
+    default_config_bool();
+    iterator_tests_bool();
+    emplace_insert_remove_bool();
 }

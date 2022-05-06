@@ -83,4 +83,11 @@ int main()
                 
     for (auto const& s : v)
         std::cout << s;
+
+    jules::vector<bool> b = {true, false};
+    auto ref1 = b.front();
+    auto ref2 = b.back();
+    std::swap(ref1, ref2);
+    for (auto x : b)
+        std::cout << x;
 }
